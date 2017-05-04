@@ -28,3 +28,4 @@ class InfoInput(models.Model):
   content   = models.TextField()
   modified  = models.TextField()
   comefrom  = models.CharField(max_length=100)
+  level     = models.IntegerField(default=1)
