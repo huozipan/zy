@@ -23,4 +23,8 @@ class Synonym(models.Model):
   name      = models.CharField(max_length=100, unique=True)
   syno      = models.CharField(max_length=100)
 
-
+class InfoInput(models.Model):
+  name      = models.CharField(max_length=100, unique=True)
+  content   = models.TextField()
+  modified  = models.TextField()
+  comefrom  = models.CharField(max_length=100)
