@@ -4,13 +4,13 @@ from django.shortcuts import render
 import jieba
 import jieba.posseg as pseg
 
-from .models import GroundFact
-
-g_dicts = {}
-
-for e in GroundFact.objects.all():
-  jieba.add_word(e.name)
-  g_dicts[e.name] = ':'+e.name
+#from .models import GroundFact
+#
+#g_dicts = {}
+#
+#for e in GroundFact.objects.all():
+#  jieba.add_word(e.name)
+#  g_dicts[e.name] = ':'+e.name
 #
 #for e in ZhengHou.objects.all():
 #  jieba.add_word(e.name)
