@@ -24,8 +24,12 @@ class Synonym(models.Model):
   syno      = models.CharField(max_length=100)
 
 class InfoInput(models.Model):
+  Stage   = (
+    (1, "raw"),
+    (2, "jiebad"),
+  )
   name      = models.CharField(max_length=100, unique=True)
   content   = models.TextField()
   modified  = models.TextField()
   comefrom  = models.CharField(max_length=100)
-  level     = models.IntegerField(default=1)
+  level     = models.CharField(choices=Stage, default=1)
