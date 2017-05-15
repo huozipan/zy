@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from django.views.generic.edit import CreateView
+from zhenghou.models import InfoInput
 
 # Create your views here.
 import jieba
@@ -51,3 +53,9 @@ def zhenghou(request):
     form = ZhengHouForm()
 
   return render(request, 'zhenghou.html', {'form': form})
+
+class RawInput(CreateView):
+  model = InputInfo
+  
+  def form_valid(self, form):
+    return super(RawInput, self).form_valid(form)
