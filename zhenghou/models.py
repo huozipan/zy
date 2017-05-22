@@ -23,13 +23,17 @@ class Synonym(models.Model):
   name      = models.CharField(max_length=100, unique=True)
   syno      = models.CharField(max_length=100)
 
-class InfoInput(models.Model):
+class Wenxian(models.Model):
+  name      = models.CharField(max_length=100, unique=True)
+  detail    = models.TextField(blank=True)
+
+class RawInfo(models.Model):
   Stage   = (
     (1, "raw"),
-    (2, "jiebad"),
+    (2, "jieba"),
   )
   name      = models.CharField(max_length=100, unique=True)
   content   = models.TextField()
-  modified  = models.TextField()
-  comefrom  = models.CharField(max_length=100)
-  level     = models.CharField(choices=Stage, default=1)
+  modified  = models.TextField(blank=True)
+  comefrom  = models.ForeignKey('Wenxian', on_delete=models.PROTECT)
+  level     = models.IntegerField(choices=Stage, default=1)
