@@ -3,9 +3,11 @@ from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
 from django.urls import reverse_lazy
 
-from zhenghou.models import RawInfo,Wenxian
+from zhenghou.models import RawInfo,Wenxian,Position,Descript,GroundFact
+import shelve
 
 # Create your views here.
+# {{{ Wenxian 
 class WenxianCreate(CreateView):
   model = Wenxian
   fields = '__all__'
@@ -14,12 +16,13 @@ class WenxianCreate(CreateView):
 class WenxianView(ListView):
   model = Wenxian
   
+# }}}
 #import jieba
 import jieba.posseg as pseg
 
 #from .models import GroundFact
 #
-g_dicts = {}
+g_dicts = shelve.open('rawinput')
 #
 #for e in GroundFact.objects.all():
 #  jieba.add_word(e.name)
@@ -68,29 +71,85 @@ def zhenghou(request):
 class RawInfo(CreateView):
   model = RawInfo
   fields = '__all__'
+  g_error = 0
+  g_errstr = ''
   
   def get_form_kwargs(self):
     kwargs = super(RawInfo,self).get_form_kwargs()
     if 'data' in kwargs:
-      myPost = kwargs['data'].copy()
-      message = myPost['content']
-      words = pseg.cut(message)
-      tmp_str = []
-      for word,flag in words:
-        if flag == 'x':
-          continue
-        if word in g_dicts:
-          tmp_str.append(":"+word)
-        else:
-          tmp_str.append(word)
+      if kwargs['data']['level'] == '1':
+        myPost = kwargs['data'].copy()
+        message = myPost['content']
+        words = pseg.cut(message)
+        tmp_str = []
+        for word,flag in words:
+          if flag == 'x':
+            continue
+          if word in g_dicts:
+            tmp_str.append("#"+word)
+          else:
+            tmp_str.append(word)
 
-      myPost['modified'] = "\n".join(tmp_str)
-      myPost['level'] = 2
-      kwargs['data'] = myPost
+        myPost['modified'] = "\n".join(tmp_str)
+#        myPost['level'] = '2'
+        kwargs['data'] = myPost
+      else:
+#        b1 = Position(id=1,name='test1')
+#        b1.save()
+#        import pprint as pp
+#        pp.pprint(b1.id)
+
+        myDetail = kwargs['data']['modified']
+        myList = myDetail.split("\n")
+        for item in myList:
+#          if item == '' or item[:1] == '#':
+          inJieba = 1
+          v = item
+          vJieba = ''
+          if item == '':
+            continue
+          elif item[:1] == '#':
+            k = item[1:]
+            v = g_dicts[k]
+            inJieba = 0
+          elif item[:1] == ';':
+            v = item[1:]
+            inJieba = 0
+          elif item[:1] == '*':
+            k = item[1:].split('*')
+            v = k[1]
+            vJieba = k[0]
+          else:
+            pass
+
+          ll = v.split('|')
+          for l in ll:
+            d = l.split(':')
+            if len(d) != 2:
+              self.g_error = 1
+              self.g_errstr = "[%s] is a wrong format, should x:y|w,z:k,c..." %(v)
+              break
+            k1 = d[0].split(',')
+            v1 = d[1].split(',')
+
+          if self.g_error == 1:
+            break
+
+          if inJieba == 1:
+            pass
+
+
 
     return kwargs
 
   def form_valid(self, form):
+    if form.cleaned_data.get('level') == 1:
+      form.cleaned_data['level'] = 2
+    else:
+      pass
+
+    if self.g_error == 1:
+      form.add_error(None, self.g_errstr)
 #    kw1 = self.get_form_kwargs()
 #    import pprint as pp
 #    pp.pprint(kw1)
