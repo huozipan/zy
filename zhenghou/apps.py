@@ -11,5 +11,5 @@ class ZhenghouConfig(AppConfig):
       g = shelve.open('rawinput')
       gl = list(g.keys())
       for k in gl:
-        jieba.add_word(k)
+        jieba.add_word(k,freq=1000,tag='n')
       g.close()

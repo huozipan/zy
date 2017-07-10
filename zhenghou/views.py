@@ -3,7 +3,7 @@ from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
 from django.urls import reverse_lazy
 
-from zhenghou.models import RawInfo,Wenxian,Position,Descript,GroundFact
+from zhenghou.models import RawInfo,Wenxian,Position,Descript,GroundFact,OrigZZ
 import shelve
 
 # Create your views here.
@@ -17,7 +17,7 @@ class WenxianView(ListView):
   model = Wenxian
   
 # }}}
-#import jieba
+import jieba
 import jieba.posseg as pseg
 
 #from .models import GroundFact
@@ -91,7 +91,7 @@ class RawInfo(CreateView):
             tmp_str.append(word)
 
         myPost['modified'] = "\n".join(tmp_str)
-#        myPost['level'] = '2'
+        myPost['level'] = '2'
         kwargs['data'] = myPost
       else:
 #        b1 = Position(id=1,name='test1')
@@ -103,15 +103,19 @@ class RawInfo(CreateView):
         myList = myDetail.split("\n")
         for item in myList:
 #          if item == '' or item[:1] == '#':
+          item = item.strip()
           inJieba = 1
           v = item
           vJieba = ''
+          vOrder = 0
           if item == '':
             continue
           elif item[:1] == '#':
             k = item[1:]
             v = g_dicts[k]
             inJieba = 0
+            # if key in g_dict, then only continue, because already in db
+            continue
           elif item[:1] == ';':
             v = item[1:]
             inJieba = 0
@@ -119,18 +123,50 @@ class RawInfo(CreateView):
             k = item[1:].split('*')
             v = k[1]
             vJieba = k[0]
+          elif item[:1] == '^':
+            v = item[1:]
+            vOrder = 1
           else:
             pass
 
           ll = v.split('|')
           for l in ll:
             d = l.split(':')
-            if len(d) != 2:
+            kl=[]
+            vl=[]
+            if len(d) == 1:
+              kl = [d[0][:1]]
+              vl = [d[0][1:]]
+            elif len(d) != 2:
               self.g_error = 1
               self.g_errstr = "[%s] is a wrong format, should x:y|w,z:k,c..." %(v)
               break
-            k1 = d[0].split(',')
-            v1 = d[1].split(',')
+            else:
+              if vOrder == 1:
+                vJieba = d[0]+d[1]
+                kl = d[1].split(',')
+                vl = d[0].split(',')
+              else:
+                kl = d[0].split(',')
+                vl = d[1].split(',')
+            for k1 in kl:
+              for v1 in vl:
+                tmp1 = k1+v1
+                if vJieba != '':
+                  tmp1 = vJieba
+                if tmp1 in g_dicts:
+                  continue
+                else:
+                  b = OrigZZ(name=tmp1, position=k1, descript=v1)
+                  b.save()
+
+                  tmp2 = {}
+                  tmp2['pos'] = k1
+                  tmp2['desc'] = v1
+                  g_dicts[tmp1] = tmp2
+
+                  jieba.add_word(tmp1,freq=1000,tag='n')
+
 
           if self.g_error == 1:
             break

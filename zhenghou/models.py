@@ -1,13 +1,13 @@
 from django.db import models
 
 # Create your models here.
-class synonym(models.Model):
+class Synonym1(models.Model):
   name = models.CharField(max_length=100, unique=True)
 
   def __str__(self):
     return self.name
 
-class dimention(models.Model):
+class Dimention(models.Model):
   name = models.CharField(max_length=100, unique=True)
 
   def __str__(self):
@@ -21,6 +21,14 @@ class Position(models.Model):
 
 class Descript(models.Model):
   name = models.CharField(max_length=100, unique=True)
+
+  def __str__(self):
+    return self.name
+
+class OrigZZ(models.Model):
+  name = models.CharField(max_length=100, unique=True)
+  position = models.CharField(max_length=100)
+  descript = models.CharField(max_length=100)
 
   def __str__(self):
     return self.name
